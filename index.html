@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+    <!DOCTYPE html>
+    <meta charset="utf-8">
+    <style> /* set the CSS */
+
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
+        }
+
+    </style>
+    <body>
+
+        <!-- load the d3.js library -->    	
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <div id="tooltip"></div>
+        <script>
+
+            // set the dimensions and margins of the graph
+            var margin = {top: 20, right: 20, bottom: 30, left: 50},
+                    width = 960 - margin.left - margin.right,
+                    height = 500 - margin.top - margin.bottom;
+
+            // set the ranges
+            var x = d3.scaleTime().range([0, width]);
+            var y = d3.scaleLinear().range([height, 0]);
+
+            // define the 1st line
+            var valueline = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.FL));
+                    });
+            //         valueline //let’s attach an event listener to points (all svg circles)
+            //  .on('mouseover', (event,d) => { //when mouse is over point
+            //        d3.select(event.currentTarget) //add a stroke to highlighted point 
+            //            .style("stroke", "black");
+
+            //        d3.select('#tooltip') // add text inside the tooltip div
+            //            .style('display', 'block') //make it visible
+            //            //here is the text that will be displayed
+            //            .html(` 
+            //                <h1 class="tooltip-title">${d.manufacturer}</h1>          
+            //                <div>Highway (HWY) MPG: ${d.hwy}</div>
+            //                City (CTY) MPG: ${d.cty}
+            //        `);
+            //  })
+            //    .on('mouseleave', (event) => {  //when mouse isn’t over point
+            //        d3.select('#tooltip').style('display', 'none'); // hide tooltip
+            //        d3.select(event.currentTarget) //remove the stroke from point
+            //            .style("stroke", "none");
+
+            //  });
+
+            // define the 2nd line
+            var valueline2 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.PA));
+                    });
+
+            var valueline3 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.CA));
+                    });
+
+            var valueline4 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.NY));
+                    });
+
+            var valueline5 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.TX));
+                    });
+
+            var valueline6 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.ND));
+                    });
+
+            var valueline7 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.AK));
+                    });
+
+            var valueline8 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.DC));
+                    });
+
+            var valueline9 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.VT));
+                    });
+
+            var valueline10 = d3.line()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y(function (d) {
+                        return y(Math.max(d.WY));
+                    });
+
+
+            // append the svg obgect to the body of the page
+            // appends a 'group' element to 'svg'
+            // moves the 'group' element to the top left margin
+            var svg = d3.select("body").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g");
+
+            const parseTime = d3.timeParse("%Y-%m-%d");
+            
+            var bisectDate = d3.bisector(function(d) { return d; }).left;
+
+            // Get the data
+            d3.csv("./Rates.csv").then(function (data) {
+                    
+                // format the data
+                data.forEach(function (d) {
+                    d.date = parseTime(d.date);
+                    d.FL = +d.FL
+                    d.PA = +d.PA
+                    d.CA = +d.CA
+                    d.NY = +d.NY
+                    d.TX = +d.TX
+                    d.ND = +d.ND
+                    d.AK = +d.AK
+                    d.DC = +d.DC
+                    d.VT = +d.VT
+                    d.WY = +d.WY;
+
+                });
+                console.log(data)
+                // Scale the range of the data
+                x.domain(d3.extent(data, function (d) {
+                    return d.date;
+                }));
+                y.domain([0, d3.max(data, function (d) {
+                        return Math.max(d.FL, d.PA, d.CA, d.NY, d.TX, d.ND, d.AK, d.DC, d.VT, d.WY);
+                    })]);
+
+                // Add the valueline path.
+                svg.append("path")
+                        .data([data])
+                        .attr("class", "line")
+                        .attr("d", valueline)
+                        .on("mouseover", (event ,d) => {
+                            
+                            var pageX = x.invert(d3.event.pageX); 
+                            const returnedDate = event.filter((e) => {
+                                pageX = pageX.setHours(0,0,0,0)
+                                console.log(bisectDate(e.date, pageX))
+                                //console.log(e.date.valueOf()== pageX.valueOf())
+                                return e.date.valueOf()== pageX.valueOf(); 
+                                
+                            })
+                            console.log(pageX);
+                            console.log(d3.event.pageX);
+                            console.log(returnedDate);
+                            
+                                                        
+                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+                                    .style("stroke", "black")
+
+                            d3.select('#tooltip') // add text inside the tooltip div
+                                    .style('display', 'block') //make it visible
+                                    //here is the text that will be displayed
+
+                                    .html(` 
+                          
+                       <h1 class="tooltip-title">${"Florida"}</h1> 
+                                    
+                           <div>Date: ${d.date}</div>
+                           <div>Unemployment Rate: ${d.FL}</div>
+
+                        
+                   `)
+                                    .on('mouseleave', (event) => {  //when mouse isn’t over point
+                                        d3.select('#tooltip').style('display', 'none'); // hide tooltip
+                                        d3.select(event.currentTarget) //remove the stroke from point
+                                                .style("stroke", "none");
+
+                                    });
+                        });
+
+//                // Add the valueline2 path.
+//                svg.append("path")
+//                        .data([data])
+//                        
+//                        .attr("class", "line")
+//                        .style("stroke", "red")
+//                        .attr("d", valueline2)
+//                        
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline2.PA}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "orange")
+//                        .attr("d", valueline3)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline3.CA}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "yellow")
+//                        .attr("d", valueline4)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline4.NY}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//                // Add the valueline2 path.
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "green")
+//                        .attr("d", valueline5)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline5.TX}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "grey")
+//                        .attr("d", valueline6)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline6.ND}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "black")
+//                        .attr("d", valueline7)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline7.AK}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+//                // Add the valueline2 path.
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "purple")
+//                        .attr("d", valueline8)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline8.DC}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "tan")
+//                        .attr("d", valueline9)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline9.VT}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+//                svg.append("path")
+//                        .data([data])
+//                        .attr("class", "line")
+//                        .style("stroke", "pink")
+//                        .attr("d", valueline10)
+//                        .on("mouseover",(event,d)=>{
+//                            console.log(d.PA)
+//                            d3.select(event.currentTarget) //add a stroke to highlighted point 
+//                       .style("stroke", "black")
+//     
+//                   d3.select('#tooltip') // add text inside the tooltip div
+//                       .style('display', 'block') //make it visible
+//                       //here is the text that will be displayed
+//                      
+//                       .html(` 
+//                          
+//                       <h1 class="tooltip-title">${valueline10.WY}</h1> 
+//                                    
+//                           <div>Date: ${data.date}</div>
+//                        
+//                   `)
+//                   .on('mouseleave', (event) => {  //when mouse isn’t over point
+//                   d3.select('#tooltip').style('display', 'none'); // hide tooltip
+//                   d3.select(event.currentTarget) //remove the stroke from point
+//                       .style("stroke", "none");
+//     
+//                   });    
+//             });
+//
+                // Add the X Axis
+                svg.append("g")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(d3.axisBottom(x));
+
+                // Add the Y Axis
+                svg.append("g")
+                        .call(d3.axisLeft(y));
+//
+            });
+
+        </script>
+    </body>
+</html>
